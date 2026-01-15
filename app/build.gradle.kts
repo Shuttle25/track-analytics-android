@@ -67,9 +67,6 @@ dependencies {
     implementation("androidx.compose.material3:material3")
     implementation("androidx.navigation:navigation-compose:2.7.5")
 
-    // Charts - Vico
-    implementation("com.patrykandpatrick.vico:compose-m3:1.13.1")
-
     // XML parsing for GPX
     implementation("org.simpleframework:simple-xml:2.7.1") {
         exclude(group = "stax", module = "stax-api")

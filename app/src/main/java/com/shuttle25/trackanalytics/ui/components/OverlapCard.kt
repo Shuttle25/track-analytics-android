@@ -37,7 +37,7 @@ fun OverlapCard(
                     color = Track1Color
                 )
                 LinearProgressIndicator(
-                    progress = { (overlap.track1OverlapPercent / 100).toFloat() },
+                    progress = (overlap.track1OverlapPercent / 100).toFloat(),
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(8.dp),
@@ -67,7 +67,7 @@ fun OverlapCard(
                     color = Track2Color
                 )
                 LinearProgressIndicator(
-                    progress = { (overlap.track2OverlapPercent / 100).toFloat() },
+                    progress = (overlap.track2OverlapPercent / 100).toFloat(),
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(8.dp),
@@ -88,7 +88,7 @@ fun OverlapCard(
                 }
             }
 
-            HorizontalDivider()
+            Divider()
 
             Text(
                 text = "Approximate shared route: ${"%.2f".format(overlap.sharedDistanceKm)} km",

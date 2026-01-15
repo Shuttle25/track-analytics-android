@@ -58,7 +58,7 @@ fun MetricsCard(
                 )
             }
 
-            HorizontalDivider()
+            Divider()
 
             // Data rows
             items.forEach { item ->
