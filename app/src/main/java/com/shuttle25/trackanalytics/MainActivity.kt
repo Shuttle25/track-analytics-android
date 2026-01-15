@@ -25,13 +25,17 @@ import kotlinx.coroutines.withContext
 
 class MainActivity : ComponentActivity() {
 
+    // Persist tracks across config changes and new intents
+    private var savedTrack1: Track? = null
+    private var savedTrack2: Track? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContent {
             TrackAnalyticsTheme {
-                var track1 by remember { mutableStateOf<Track?>(null) }
-                var track2 by remember { mutableStateOf<Track?>(null) }
+                var track1 by remember { mutableStateOf(savedTrack1) }
+                var track2 by remember { mutableStateOf(savedTrack2) }
                 var comparisonResult by remember { mutableStateOf<ComparisonResult?>(null) }
                 var isLoading by remember { mutableStateOf(false) }
                 var selectingTrack by remember { mutableIntStateOf(0) }
@@ -39,6 +43,10 @@ class MainActivity : ComponentActivity() {
                 // For intent dialog
                 var pendingUri by remember { mutableStateOf<Uri?>(null) }
                 var showTrackDialog by remember { mutableStateOf(false) }
+
+                // Sync with saved state
+                LaunchedEffect(track1) { savedTrack1 = track1 }
+                LaunchedEffect(track2) { savedTrack2 = track2 }
 
                 val filePickerLauncher = rememberLauncherForActivityResult(
                     contract = ActivityResultContracts.OpenDocument()
@@ -140,6 +148,8 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
+        // Recreate to handle new intent with preserved tracks
+        recreate()
     }
 
     private fun getUriFromIntent(intent: Intent?): Uri? {
