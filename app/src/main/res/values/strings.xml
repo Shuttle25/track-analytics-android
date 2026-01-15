@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Track Analytics</string>
+    <string name="select_track_1">Select Track 1</string>
+    <string name="select_track_2">Select Track 2</string>
+    <string name="compare">Compare</string>
+    <string name="distance">Distance</string>
+    <string name="elevation">Elevation</string>
+    <string name="speed">Speed</string>
+    <string name="overlap">Overlap</string>
+</resources>
