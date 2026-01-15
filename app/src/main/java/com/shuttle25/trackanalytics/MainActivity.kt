@@ -8,6 +8,9 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.lifecycle.lifecycleScope
 import com.shuttle25.trackanalytics.data.model.ComparisonResult
@@ -33,6 +36,10 @@ class MainActivity : ComponentActivity() {
                 var isLoading by remember { mutableStateOf(false) }
                 var selectingTrack by remember { mutableIntStateOf(0) }
 
+                // For intent dialog
+                var pendingUri by remember { mutableStateOf<Uri?>(null) }
+                var showTrackDialog by remember { mutableStateOf(false) }
+
                 val filePickerLauncher = rememberLauncherForActivityResult(
                     contract = ActivityResultContracts.OpenDocument()
                 ) { uri ->
@@ -54,13 +61,50 @@ class MainActivity : ComponentActivity() {
 
                 // Handle incoming intent (share from OsmAnd)
                 LaunchedEffect(Unit) {
-                    handleIncomingIntent(intent) { track ->
-                        if (track1 == null) {
-                            track1 = track
-                        } else if (track2 == null) {
-                            track2 = track
-                        }
+                    getUriFromIntent(intent)?.let { uri ->
+                        pendingUri = uri
+                        showTrackDialog = true
                     }
+                }
+
+                // Track selection dialog
+                if (showTrackDialog && pendingUri != null) {
+                    AlertDialog(
+                        onDismissRequest = {
+                            showTrackDialog = false
+                            pendingUri = null
+                        },
+                        title = { Text("Load as") },
+                        text = { Text("Select which track slot to use") },
+                        confirmButton = {
+                            TextButton(onClick = {
+                                pendingUri?.let { uri ->
+                                    loadTrack(uri) { track ->
+                                        track1 = track
+                                        comparisonResult = null
+                                    }
+                                }
+                                showTrackDialog = false
+                                pendingUri = null
+                            }) {
+                                Text("Track 1")
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = {
+                                pendingUri?.let { uri ->
+                                    loadTrack(uri) { track ->
+                                        track2 = track
+                                        comparisonResult = null
+                                    }
+                                }
+                                showTrackDialog = false
+                                pendingUri = null
+                            }) {
+                                Text("Track 2")
+                            }
+                        }
+                    )
                 }
 
                 ComparisonScreen(
@@ -98,15 +142,11 @@ class MainActivity : ComponentActivity() {
         setIntent(intent)
     }
 
-    private fun handleIncomingIntent(intent: Intent?, onTrackLoaded: (Track) -> Unit) {
-        when (intent?.action) {
-            Intent.ACTION_SEND -> {
-                val uri = intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
-                uri?.let { loadTrack(it, onTrackLoaded) }
-            }
-            Intent.ACTION_VIEW -> {
-                intent.data?.let { loadTrack(it, onTrackLoaded) }
-            }
+    private fun getUriFromIntent(intent: Intent?): Uri? {
+        return when (intent?.action) {
+            Intent.ACTION_SEND -> intent.getParcelableExtra(Intent.EXTRA_STREAM)
+            Intent.ACTION_VIEW -> intent.data
+            else -> null
         }
     }
 
