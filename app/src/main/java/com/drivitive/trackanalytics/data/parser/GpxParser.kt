@@ -1,9 +1,9 @@
-package com.shuttle25.trackanalytics.data.parser
+package com.drivitive.trackanalytics.data.parser
 
 import android.content.Context
 import android.net.Uri
-import com.shuttle25.trackanalytics.data.model.Track
-import com.shuttle25.trackanalytics.data.model.TrackPoint
+import com.drivitive.trackanalytics.data.model.Track
+import com.drivitive.trackanalytics.data.model.TrackPoint
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserFactory
 import java.io.InputStream

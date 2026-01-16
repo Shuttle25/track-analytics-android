@@ -1,4 +1,4 @@
-package com.shuttle25.trackanalytics.ui.components
+package com.drivitive.trackanalytics.ui.components
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
@@ -12,10 +12,10 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.shuttle25.trackanalytics.data.model.Track
-import com.shuttle25.trackanalytics.data.repository.TrackAnalyzer
-import com.shuttle25.trackanalytics.ui.theme.Track1Color
-import com.shuttle25.trackanalytics.ui.theme.Track2Color
+import com.drivitive.trackanalytics.data.model.Track
+import com.drivitive.trackanalytics.data.repository.TrackAnalyzer
+import com.drivitive.trackanalytics.ui.theme.Track1Color
+import com.drivitive.trackanalytics.ui.theme.Track2Color
 
 @Composable
 fun ElevationChart(

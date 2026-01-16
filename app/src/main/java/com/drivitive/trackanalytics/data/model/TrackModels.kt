@@ -1,4 +1,4 @@
-package com.shuttle25.trackanalytics.data.model
+package com.drivitive.trackanalytics.data.model
 
 import java.time.Duration
 import java.time.LocalDateTime

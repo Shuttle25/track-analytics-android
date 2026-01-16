@@ -1,14 +1,31 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
 }
 
+val keystorePropertiesFile = rootProject.file("keystore.properties")
+val keystoreProperties = Properties()
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(keystorePropertiesFile.inputStream())
+}
+
 android {
-    namespace = "com.shuttle25.trackanalytics"
+    namespace = "com.drivitive.trackanalytics"
     compileSdk = 34
 
+    signingConfigs {
+        create("release") {
+            storeFile = file(rootProject.file(keystoreProperties["storeFile"] as String))
+            storePassword = keystoreProperties["storePassword"] as String
+            keyAlias = keystoreProperties["keyAlias"] as String
+            keyPassword = keystoreProperties["keyPassword"] as String
+        }
+    }
+
     defaultConfig {
-        applicationId = "com.shuttle25.trackanalytics"
+        applicationId = "com.drivitive.trackanalytics"
         minSdk = 26
         targetSdk = 34
         versionCode = 1
@@ -21,11 +38,13 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 

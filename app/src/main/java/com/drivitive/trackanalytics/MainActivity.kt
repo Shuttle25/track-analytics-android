@@ -1,4 +1,4 @@
-package com.shuttle25.trackanalytics
+package com.drivitive.trackanalytics
 
 import android.content.Intent
 import android.net.Uri
@@ -13,13 +13,13 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.lifecycle.lifecycleScope
-import com.shuttle25.trackanalytics.data.model.ComparisonResult
-import com.shuttle25.trackanalytics.data.model.Track
-import com.shuttle25.trackanalytics.data.parser.GpxParser
-import com.shuttle25.trackanalytics.data.repository.TrackAnalyzer
-import com.shuttle25.trackanalytics.data.repository.TrackStore
-import com.shuttle25.trackanalytics.ui.screens.ComparisonScreen
-import com.shuttle25.trackanalytics.ui.theme.TrackAnalyticsTheme
+import com.drivitive.trackanalytics.data.model.ComparisonResult
+import com.drivitive.trackanalytics.data.model.Track
+import com.drivitive.trackanalytics.data.parser.GpxParser
+import com.drivitive.trackanalytics.data.repository.TrackAnalyzer
+import com.drivitive.trackanalytics.data.repository.TrackStore
+import com.drivitive.trackanalytics.ui.screens.ComparisonScreen
+import com.drivitive.trackanalytics.ui.theme.TrackAnalyticsTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext

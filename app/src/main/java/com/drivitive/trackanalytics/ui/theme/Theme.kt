@@ -1,4 +1,4 @@
-package com.shuttle25.trackanalytics.ui.theme
+package com.drivitive.trackanalytics.ui.theme
 
 import android.app.Activity
 import androidx.compose.foundation.isSystemInDarkTheme

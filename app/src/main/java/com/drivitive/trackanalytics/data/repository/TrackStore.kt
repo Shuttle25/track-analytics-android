@@ -1,6 +1,6 @@
-package com.shuttle25.trackanalytics.data.repository
+package com.drivitive.trackanalytics.data.repository
 
-import com.shuttle25.trackanalytics.data.model.Track
+import com.drivitive.trackanalytics.data.model.Track
 
 /**
  * Singleton to persist tracks across activity recreation.

@@ -5,5 +5,8 @@
 -keepattributes *Annotation*
 -keepattributes Signature
 
+# Ignore missing javax.xml.stream classes (not used on Android)
+-dontwarn javax.xml.stream.**
+
 # Keep data models
--keep class com.shuttle25.trackanalytics.data.model.** { *; }
+-keep class com.drivitive.trackanalytics.data.model.** { *; }

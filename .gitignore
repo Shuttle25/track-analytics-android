@@ -12,6 +12,10 @@ local.properties
 *.apk
 *.aab
 
+# Signing
+keystore.properties
+*.jks
+
 # Log files
 *.log
 

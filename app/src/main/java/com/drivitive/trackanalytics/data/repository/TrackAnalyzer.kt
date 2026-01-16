@@ -1,6 +1,6 @@
-package com.shuttle25.trackanalytics.data.repository
+package com.drivitive.trackanalytics.data.repository
 
-import com.shuttle25.trackanalytics.data.model.*
+import com.drivitive.trackanalytics.data.model.*
 import java.time.Duration
 import kotlin.math.*
 

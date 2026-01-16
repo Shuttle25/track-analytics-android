@@ -1,4 +1,4 @@
-package com.shuttle25.trackanalytics.ui.screens
+package com.drivitive.trackanalytics.ui.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -9,12 +9,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.shuttle25.trackanalytics.data.model.*
-import com.shuttle25.trackanalytics.ui.components.ElevationChart
-import com.shuttle25.trackanalytics.ui.components.MetricsCard
-import com.shuttle25.trackanalytics.ui.components.OverlapCard
-import com.shuttle25.trackanalytics.ui.theme.Track1Color
-import com.shuttle25.trackanalytics.ui.theme.Track2Color
+import com.drivitive.trackanalytics.data.model.*
+import com.drivitive.trackanalytics.ui.components.ElevationChart
+import com.drivitive.trackanalytics.ui.components.MetricsCard
+import com.drivitive.trackanalytics.ui.components.OverlapCard
+import com.drivitive.trackanalytics.ui.theme.Track1Color
+import com.drivitive.trackanalytics.ui.theme.Track2Color
 import java.time.Duration
 
 @OptIn(ExperimentalMaterial3Api::class)

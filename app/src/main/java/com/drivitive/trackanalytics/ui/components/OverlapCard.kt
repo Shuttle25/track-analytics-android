@@ -1,4 +1,4 @@
-package com.shuttle25.trackanalytics.ui.components
+package com.drivitive.trackanalytics.ui.components
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -6,9 +6,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.shuttle25.trackanalytics.data.model.OverlapResult
-import com.shuttle25.trackanalytics.ui.theme.Track1Color
-import com.shuttle25.trackanalytics.ui.theme.Track2Color
+import com.drivitive.trackanalytics.data.model.OverlapResult
+import com.drivitive.trackanalytics.ui.theme.Track1Color
+import com.drivitive.trackanalytics.ui.theme.Track2Color
 
 @Composable
 fun OverlapCard(
