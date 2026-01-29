@@ -3,6 +3,9 @@ package com.drivitive.trackanalytics.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -13,6 +16,7 @@ import com.drivitive.trackanalytics.data.model.*
 import com.drivitive.trackanalytics.ui.components.ElevationChart
 import com.drivitive.trackanalytics.ui.components.MetricsCard
 import com.drivitive.trackanalytics.ui.components.OverlapCard
+import com.drivitive.trackanalytics.ui.components.SingleTrackCard
 import com.drivitive.trackanalytics.ui.theme.Track1Color
 import com.drivitive.trackanalytics.ui.theme.Track2Color
 import java.time.Duration
@@ -27,8 +31,12 @@ fun ComparisonScreen(
     onSelectTrack1: () -> Unit,
     onSelectTrack2: () -> Unit,
     onCompare: () -> Unit,
+    onClear: () -> Unit,
+    onExport: () -> Unit,
     canCompare: Boolean
 ) {
+    var expandedTrack by remember { mutableIntStateOf(0) } // 0 = none, 1 = track1, 2 = track2
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -36,7 +44,25 @@ fun ComparisonScreen(
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = MaterialTheme.colorScheme.onPrimary
-                )
+                ),
+                actions = {
+                    if (comparisonResult != null) {
+                        IconButton(onClick = onExport) {
+                            Icon(
+                                Icons.Default.Share,
+                                contentDescription = "Export",
+                                tint = MaterialTheme.colorScheme.onPrimary
+                            )
+                        }
+                        IconButton(onClick = onClear) {
+                            Icon(
+                                Icons.Default.Clear,
+                                contentDescription = "Clear",
+                                tint = MaterialTheme.colorScheme.onPrimary
+                            )
+                        }
+                    }
+                }
             )
         }
     ) { paddingValues ->
@@ -70,62 +96,102 @@ fun ComparisonScreen(
             }
 
             comparisonResult?.let { result ->
-                // Distance
-                MetricsCard(
-                    title = "Distance",
-                    items = listOf(
-                        MetricItem("Distance", "${formatDistance(result.metrics1.totalDistanceKm)} km", "${formatDistance(result.metrics2.totalDistanceKm)} km"),
-                        MetricItem("Points", "${result.metrics1.pointCount}", "${result.metrics2.pointCount}")
-                    ),
-                    track1Name = result.track1.name,
-                    track2Name = result.track2.name
-                )
+                // Expand/collapse buttons
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    FilterChip(
+                        selected = expandedTrack == 1,
+                        onClick = { expandedTrack = if (expandedTrack == 1) 0 else 1 },
+                        label = { Text(result.track1.name.take(12)) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = Track1Color.copy(alpha = 0.2f),
+                            selectedLabelColor = Track1Color
+                        ),
+                        modifier = Modifier.weight(1f)
+                    )
+                    FilterChip(
+                        selected = expandedTrack == 2,
+                        onClick = { expandedTrack = if (expandedTrack == 2) 0 else 2 },
+                        label = { Text(result.track2.name.take(12)) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = Track2Color.copy(alpha = 0.2f),
+                            selectedLabelColor = Track2Color
+                        ),
+                        modifier = Modifier.weight(1f)
+                    )
+                }
 
-                // Elevation
-                if (result.metrics1.elevation != null && result.metrics2.elevation != null) {
+                // Single track view
+                if (expandedTrack != 0) {
+                    val track = if (expandedTrack == 1) result.track1 else result.track2
+                    val metrics = if (expandedTrack == 1) result.metrics1 else result.metrics2
+                    val color = if (expandedTrack == 1) Track1Color else Track2Color
+
+                    SingleTrackCard(
+                        track = track,
+                        metrics = metrics,
+                        color = color
+                    )
+                } else {
+                    // Distance
                     MetricsCard(
-                        title = "Elevation",
+                        title = "Distance",
                         items = listOf(
-                            MetricItem("Min", "${result.metrics1.elevation.minElevation.toInt()} m", "${result.metrics2.elevation.minElevation.toInt()} m"),
-                            MetricItem("Max", "${result.metrics1.elevation.maxElevation.toInt()} m", "${result.metrics2.elevation.maxElevation.toInt()} m"),
-                            MetricItem("Ascent", "${result.metrics1.elevation.totalAscent.toInt()} m", "${result.metrics2.elevation.totalAscent.toInt()} m"),
-                            MetricItem("Descent", "${result.metrics1.elevation.totalDescent.toInt()} m", "${result.metrics2.elevation.totalDescent.toInt()} m")
+                            MetricItem("Distance", "${formatDistance(result.metrics1.totalDistanceKm)} km", "${formatDistance(result.metrics2.totalDistanceKm)} km"),
+                            MetricItem("Points", "${result.metrics1.pointCount}", "${result.metrics2.pointCount}")
                         ),
                         track1Name = result.track1.name,
                         track2Name = result.track2.name
                     )
 
-                    // Elevation chart
-                    ElevationChart(
-                        track1 = result.track1,
-                        track2 = result.track2,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(200.dp)
-                    )
-                }
+                    // Elevation
+                    if (result.metrics1.elevation != null && result.metrics2.elevation != null) {
+                        MetricsCard(
+                            title = "Elevation",
+                            items = listOf(
+                                MetricItem("Min", "${result.metrics1.elevation.minElevation.toInt()} m", "${result.metrics2.elevation.minElevation.toInt()} m"),
+                                MetricItem("Max", "${result.metrics1.elevation.maxElevation.toInt()} m", "${result.metrics2.elevation.maxElevation.toInt()} m"),
+                                MetricItem("Ascent", "${result.metrics1.elevation.totalAscent.toInt()} m", "${result.metrics2.elevation.totalAscent.toInt()} m"),
+                                MetricItem("Descent", "${result.metrics1.elevation.totalDescent.toInt()} m", "${result.metrics2.elevation.totalDescent.toInt()} m")
+                            ),
+                            track1Name = result.track1.name,
+                            track2Name = result.track2.name
+                        )
 
-                // Speed
-                if (result.metrics1.speed != null && result.metrics2.speed != null) {
-                    MetricsCard(
-                        title = "Speed & Time",
-                        items = listOf(
-                            MetricItem("Duration", formatDuration(result.metrics1.speed.duration), formatDuration(result.metrics2.speed.duration)),
-                            MetricItem("Moving", formatDuration(result.metrics1.speed.movingTime), formatDuration(result.metrics2.speed.movingTime)),
-                            MetricItem("Avg speed", "${formatSpeed(result.metrics1.speed.avgSpeedKmh)} km/h", "${formatSpeed(result.metrics2.speed.avgSpeedKmh)} km/h"),
-                            MetricItem("Max speed", "${formatSpeed(result.metrics1.speed.maxSpeedKmh)} km/h", "${formatSpeed(result.metrics2.speed.maxSpeedKmh)} km/h")
-                        ),
+                        // Elevation chart
+                        ElevationChart(
+                            track1 = result.track1,
+                            track2 = result.track2,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(250.dp)
+                        )
+                    }
+
+                    // Speed
+                    if (result.metrics1.speed != null && result.metrics2.speed != null) {
+                        MetricsCard(
+                            title = "Speed & Time",
+                            items = listOf(
+                                MetricItem("Duration", formatDuration(result.metrics1.speed.duration), formatDuration(result.metrics2.speed.duration)),
+                                MetricItem("Moving", formatDuration(result.metrics1.speed.movingTime), formatDuration(result.metrics2.speed.movingTime)),
+                                MetricItem("Avg speed", "${formatSpeed(result.metrics1.speed.avgSpeedKmh)} km/h", "${formatSpeed(result.metrics2.speed.avgSpeedKmh)} km/h"),
+                                MetricItem("Max speed", "${formatSpeed(result.metrics1.speed.maxSpeedKmh)} km/h", "${formatSpeed(result.metrics2.speed.maxSpeedKmh)} km/h")
+                            ),
+                            track1Name = result.track1.name,
+                            track2Name = result.track2.name
+                        )
+                    }
+
+                    // Overlap
+                    OverlapCard(
+                        overlap = result.overlap,
                         track1Name = result.track1.name,
                         track2Name = result.track2.name
                     )
                 }
-
-                // Overlap
-                OverlapCard(
-                    overlap = result.overlap,
-                    track1Name = result.track1.name,
-                    track2Name = result.track2.name
-                )
             }
         }
     }

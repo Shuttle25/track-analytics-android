@@ -13,6 +13,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.lifecycle.lifecycleScope
+import com.drivitive.trackanalytics.data.export.HtmlExporter
 import com.drivitive.trackanalytics.data.model.ComparisonResult
 import com.drivitive.trackanalytics.data.model.Track
 import com.drivitive.trackanalytics.data.parser.GpxParser
@@ -134,6 +135,19 @@ class MainActivity : ComponentActivity() {
                                 comparisonResult = compareTracksAsync(t1, t2)
                                 isLoading = false
                             }
+                        }
+                    },
+                    onClear = {
+                        track1 = null
+                        track2 = null
+                        comparisonResult = null
+                        TrackStore.track1 = null
+                        TrackStore.track2 = null
+                    },
+                    onExport = {
+                        comparisonResult?.let { result ->
+                            val intent = HtmlExporter.exportComparison(this@MainActivity, result)
+                            startActivity(Intent.createChooser(intent, "Share comparison"))
                         }
                     },
                     canCompare = track1 != null && track2 != null

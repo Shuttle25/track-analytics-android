@@ -9,7 +9,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.drivitive.trackanalytics.data.model.Track
@@ -26,6 +28,9 @@ fun ElevationChart(
     val chartData = remember(track1, track2) {
         prepareChartData(track1, track2)
     }
+
+    val axisColor = MaterialTheme.colorScheme.onSurfaceVariant
+    val gridColor = MaterialTheme.colorScheme.outlineVariant
 
     Card(modifier = modifier) {
         Column(
@@ -50,54 +55,64 @@ fun ElevationChart(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Chart
+            // Chart with axes
             Canvas(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(120.dp)
+                    .height(160.dp)
             ) {
-                val width = size.width
-                val height = size.height
-                val padding = 8f
+                val leftPadding = 50f
+                val bottomPadding = 40f
+                val topPadding = 8f
+                val rightPadding = 8f
 
+                val chartWidth = size.width - leftPadding - rightPadding
+                val chartHeight = size.height - bottomPadding - topPadding
+
+                // Draw axes and grid
+                drawAxesAndGrid(
+                    leftPadding = leftPadding,
+                    topPadding = topPadding,
+                    chartWidth = chartWidth,
+                    chartHeight = chartHeight,
+                    minEle = chartData.minElevation,
+                    maxEle = chartData.maxElevation,
+                    maxDist = chartData.maxDistanceKm,
+                    axisColor = axisColor,
+                    gridColor = gridColor
+                )
+
+                // Draw track 1
                 if (chartData.elevations1.isNotEmpty()) {
                     drawElevationPath(
                         elevations = chartData.elevations1,
+                        distances = chartData.distances1,
                         minEle = chartData.minElevation,
                         maxEle = chartData.maxElevation,
-                        width = width,
-                        height = height,
-                        padding = padding,
+                        maxDist = chartData.maxDistanceKm,
+                        leftPadding = leftPadding,
+                        topPadding = topPadding,
+                        chartWidth = chartWidth,
+                        chartHeight = chartHeight,
                         color = Track1Color
                     )
                 }
 
+                // Draw track 2
                 if (chartData.elevations2.isNotEmpty()) {
                     drawElevationPath(
                         elevations = chartData.elevations2,
+                        distances = chartData.distances2,
                         minEle = chartData.minElevation,
                         maxEle = chartData.maxElevation,
-                        width = width,
-                        height = height,
-                        padding = padding,
+                        maxDist = chartData.maxDistanceKm,
+                        leftPadding = leftPadding,
+                        topPadding = topPadding,
+                        chartWidth = chartWidth,
+                        chartHeight = chartHeight,
                         color = Track2Color
                     )
                 }
-            }
-
-            // Min/Max labels
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = "${chartData.minElevation.toInt()}m",
-                    style = MaterialTheme.typography.bodySmall
-                )
-                Text(
-                    text = "${chartData.maxElevation.toInt()}m",
-                    style = MaterialTheme.typography.bodySmall
-                )
             }
         }
     }
@@ -118,25 +133,131 @@ private fun LegendItem(color: Color, label: String) {
     }
 }
 
-private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawElevationPath(
-    elevations: List<Double>,
+private fun DrawScope.drawAxesAndGrid(
+    leftPadding: Float,
+    topPadding: Float,
+    chartWidth: Float,
+    chartHeight: Float,
     minEle: Double,
     maxEle: Double,
-    width: Float,
-    height: Float,
-    padding: Float,
+    maxDist: Double,
+    axisColor: Color,
+    gridColor: Color
+) {
+    val paint = android.graphics.Paint().apply {
+        textSize = 26f
+        color = android.graphics.Color.GRAY
+        isAntiAlias = true
+    }
+
+    // Y axis (elevation)
+    drawLine(
+        color = axisColor,
+        start = Offset(leftPadding, topPadding),
+        end = Offset(leftPadding, topPadding + chartHeight),
+        strokeWidth = 2f
+    )
+
+    // X axis (distance)
+    drawLine(
+        color = axisColor,
+        start = Offset(leftPadding, topPadding + chartHeight),
+        end = Offset(leftPadding + chartWidth, topPadding + chartHeight),
+        strokeWidth = 2f
+    )
+
+    // Y axis labels and horizontal grid
+    val eleRange = (maxEle - minEle).coerceAtLeast(1.0)
+    val ySteps = 4
+    for (i in 0..ySteps) {
+        val y = topPadding + chartHeight - (i.toFloat() / ySteps) * chartHeight
+        val eleValue = minEle + (i.toFloat() / ySteps) * eleRange
+
+        // Horizontal grid line
+        if (i > 0 && i < ySteps) {
+            drawLine(
+                color = gridColor,
+                start = Offset(leftPadding, y),
+                end = Offset(leftPadding + chartWidth, y),
+                strokeWidth = 1f
+            )
+        }
+
+        // Y label (elevation in meters)
+        drawContext.canvas.nativeCanvas.drawText(
+            "${eleValue.toInt()}",
+            5f,
+            y + 8f,
+            paint
+        )
+    }
+
+    // Draw "m" label for Y axis
+    paint.textSize = 22f
+    drawContext.canvas.nativeCanvas.drawText(
+        "m",
+        15f,
+        topPadding - 2f,
+        paint
+    )
+
+    // X axis labels and vertical grid
+    paint.textSize = 26f
+    val xSteps = 5
+    for (i in 0..xSteps) {
+        val x = leftPadding + (i.toFloat() / xSteps) * chartWidth
+        val distValue = (i.toFloat() / xSteps) * maxDist
+
+        // Vertical grid line
+        if (i > 0 && i < xSteps) {
+            drawLine(
+                color = gridColor,
+                start = Offset(x, topPadding),
+                end = Offset(x, topPadding + chartHeight),
+                strokeWidth = 1f
+            )
+        }
+
+        // X label (distance in km)
+        val label = if (distValue < 10) "%.1f".format(distValue) else "${distValue.toInt()}"
+        drawContext.canvas.nativeCanvas.drawText(
+            label,
+            x - 12f,
+            topPadding + chartHeight + 25f,
+            paint
+        )
+    }
+
+    // Draw "km" label for X axis
+    paint.textSize = 22f
+    drawContext.canvas.nativeCanvas.drawText(
+        "km",
+        leftPadding + chartWidth - 25f,
+        topPadding + chartHeight + 35f,
+        paint
+    )
+}
+
+private fun DrawScope.drawElevationPath(
+    elevations: List<Double>,
+    distances: List<Double>,
+    minEle: Double,
+    maxEle: Double,
+    maxDist: Double,
+    leftPadding: Float,
+    topPadding: Float,
+    chartWidth: Float,
+    chartHeight: Float,
     color: Color
 ) {
-    if (elevations.isEmpty()) return
+    if (elevations.isEmpty() || maxDist <= 0) return
 
     val eleRange = (maxEle - minEle).coerceAtLeast(1.0)
-    val chartWidth = width - 2 * padding
-    val chartHeight = height - 2 * padding
 
     val path = Path()
     elevations.forEachIndexed { index, elevation ->
-        val x = padding + (index.toFloat() / (elevations.size - 1).coerceAtLeast(1)) * chartWidth
-        val y = padding + chartHeight - ((elevation - minEle) / eleRange * chartHeight).toFloat()
+        val x = leftPadding + (distances[index] / maxDist * chartWidth).toFloat()
+        val y = topPadding + chartHeight - ((elevation - minEle) / eleRange * chartHeight).toFloat()
 
         if (index == 0) {
             path.moveTo(x, y)
@@ -154,29 +275,72 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawElevationPath(
 
 private data class ChartData(
     val elevations1: List<Double>,
+    val distances1: List<Double>,
     val elevations2: List<Double>,
+    val distances2: List<Double>,
     val minElevation: Double,
-    val maxElevation: Double
+    val maxElevation: Double,
+    val maxDistanceKm: Double
 )
 
 private fun prepareChartData(track1: Track, track2: Track): ChartData {
-    val ele1 = track1.points.mapNotNull { it.elevation }.sample(100)
-    val ele2 = track2.points.mapNotNull { it.elevation }.sample(100)
+    val dist1 = TrackAnalyzer.cumulativeDistances(track1)
+    val dist2 = TrackAnalyzer.cumulativeDistances(track2)
 
-    val allElevations = ele1 + ele2
+    val ele1 = mutableListOf<Double>()
+    val sampledDist1 = mutableListOf<Double>()
+    track1.points.forEachIndexed { index, point ->
+        point.elevation?.let { ele ->
+            ele1.add(ele)
+            sampledDist1.add(dist1.getOrElse(index) { 0.0 })
+        }
+    }
+
+    val ele2 = mutableListOf<Double>()
+    val sampledDist2 = mutableListOf<Double>()
+    track2.points.forEachIndexed { index, point ->
+        point.elevation?.let { ele ->
+            ele2.add(ele)
+            sampledDist2.add(dist2.getOrElse(index) { 0.0 })
+        }
+    }
+
+    // Sample points
+    val maxPoints = 120
+    val (finalEle1, finalDist1) = sampleData(ele1, sampledDist1, maxPoints)
+    val (finalEle2, finalDist2) = sampleData(ele2, sampledDist2, maxPoints)
+
+    val allElevations = finalEle1 + finalEle2
     val minEle = allElevations.minOrNull() ?: 0.0
     val maxEle = allElevations.maxOrNull() ?: 100.0
 
+    val maxDist = maxOf(
+        dist1.lastOrNull() ?: 0.0,
+        dist2.lastOrNull() ?: 0.0
+    )
+
     return ChartData(
-        elevations1 = ele1,
-        elevations2 = ele2,
+        elevations1 = finalEle1,
+        distances1 = finalDist1,
+        elevations2 = finalEle2,
+        distances2 = finalDist2,
         minElevation = minEle,
-        maxElevation = maxEle
+        maxElevation = maxEle,
+        maxDistanceKm = maxDist
     )
 }
 
-private fun List<Double>.sample(maxPoints: Int): List<Double> {
-    if (size <= maxPoints) return this
-    val step = size / maxPoints
-    return filterIndexed { index, _ -> index % step == 0 }
+private fun sampleData(
+    elevations: List<Double>,
+    distances: List<Double>,
+    maxPoints: Int
+): Pair<List<Double>, List<Double>> {
+    if (elevations.size <= maxPoints) {
+        return Pair(elevations, distances)
+    }
+
+    val step = elevations.size / maxPoints
+    val sampledEle = elevations.filterIndexed { i, _ -> i % step == 0 }
+    val sampledDist = distances.filterIndexed { i, _ -> i % step == 0 }
+    return Pair(sampledEle, sampledDist)
 }
